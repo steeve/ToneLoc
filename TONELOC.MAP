@@ -1,0 +1,12 @@
+Error: _CHARIN defined in module TONELOC.C is duplicated in module TONELOC.C
+Error: _CARRIER defined in module TONELOC.C is duplicated in module SERIAL.C
+Error: _SETDTR defined in module TONELOC.C is duplicated in module FOSASM.ASM
+Error: Segment _TEXT exceeds 64K
+
+ Start  Stop   Length Name               Class
+
+ 00000H 1007BH 1007CH _TEXT              CODE
+ 20000H 21E05H 01E06H _DATA              DATA
+ 21E06H 24FF7H 031F2H _BSS               BSS
+
+

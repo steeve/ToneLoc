@@ -1,0 +1,48 @@
+22:49:41 ¯
+22:49:41 ToneLoc started on 07-Jun-94
+22:49:41 Using COM1 (16450 UART)
+22:49:41 Data file:      562XXXX.DAT
+22:49:41 Config file:    TL.CFG
+22:49:41 Log file:       TONE.LOG
+22:49:41 Mask used:      562XXXX
+22:49:41 Scanning for:   Carriers
+22:49:42 Initializing Modem ... Failed!
+22:49:48 Initializing Modem ... Failed!
+22:49:51 Initializing Modem ... Failed!
+22:49:53 Initialization Failure, exiting
+22:49:53 Sending exit string ... Done
+22:49:54 Dials = 0, Dials/hour = 0
+22:49:54 0:00 spent current scan
+22:49:54 Exit with errorlevel 1
+22:50:05 ¯
+22:50:05 ToneLoc started on 07-Jun-94
+22:50:05 Using COM2 (16550A UART)
+22:50:05 Data file:      562XXXX.DAT
+22:50:05 Config file:    TL.CFG
+22:50:05 Log file:       TONE.LOG
+22:50:05 Mask used:      562XXXX
+22:50:05 Scanning for:   Carriers
+22:50:05 Initializing Modem ... Done
+22:50:08 Quiet mode
+22:50:08 Speaker OFF
+22:50:10 5629490 - Escaped
+22:50:22 Sending exit string ... Done
+22:50:22 Dials = 1, Dials/hour = 265
+22:50:22 0:00 spent current scan
+22:50:22 Exit with errorlevel 1
+13:58:37 ¯
+13:58:37 ToneLoc started on 09-Jun-94
+13:58:37 Using COM1 (16450 UART)
+13:58:37 Data file:      562XXXX.DAT
+13:58:37 Config file:    TL.CFG
+13:58:37 Log file:       TONE.LOG
+13:58:37 Mask used:      562XXXX
+13:58:37 Scanning for:   Carriers
+13:58:37 Initializing Modem ... Failed!
+13:58:41 Initializing Modem ... Failed!
+13:58:44 Initializing Modem ... Failed!
+13:58:47 Initialization Failure, exiting
+13:58:47 Sending exit string ... Done
+13:58:47 Dials = 0, Dials/hour = 0
+13:58:47 0:00 spent current scan
+13:58:48 Exit with errorlevel 1

@@ -1,0 +1,29 @@
+c:\tc\bin\tcc -Ic:\tc\include -Lc:\tc\lib toneloc.c fossil.c serial.c getopt.c fosasm.asm serasm.asm cxl-tl.lib
+Turbo C++ Version 3.00 Copyright (c) 1992 Borland International
+toneloc.c:
+Warning toneloc.c 2436: Code has no effect in function ModemCommandChar
+Error toneloc.c 2437: Statement missing ; in function ModemCommandChar
+*** 1 errors in Compile ***
+fossil.c:
+serial.c:
+getopt.c:
+fosasm.asm:
+Turbo Assembler  Version 4.0  Copyright (c) 1988, 1993 Borland International
+
+Assembling file:   fosasm.ASM
+Error messages:    None
+Warning messages:  None
+Passes:            1
+Remaining memory:  360k
+
+serasm.asm:
+Turbo Assembler  Version 4.0  Copyright (c) 1988, 1993 Borland International
+
+Assembling file:   serasm.ASM
+Error messages:    None
+Warning messages:  None
+Passes:            1
+Remaining memory:  358k
+
+
+        Available memory 3834084

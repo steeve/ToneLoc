@@ -1,0 +1,783 @@
+*B 1,Files Menu
+  The Files Menu allows you to change the names
+  of various files ToneLoc uses, including the:
+  Log File, Found File, Black List File, and
+  Alternate Screen.
+*E
+
+*B 100,Modem Strings
+  The Modem Strings Menu allows you change the
+  commands and responses Toneloc sends and
+  receives from the modem.
+*E
+
+*B 200,Modem Options
+  The Modem Options Menu allows you to change the
+  general communications parameters for ToneLoc,
+  like serial port, baud rate, etc.
+*E
+
+*B 300,Scan Options
+  The Scan Options Menu allows you to change the
+  non-modem related things.  You can configure
+  sound effects, delays, and other various
+  features.
+*E
+
+*B 400,Colors
+  The Colors Menu allows you to change the way
+  ToneLoc looks.  You can change all the colors
+  here.
+*E
+
+*B 500,Quit
+  The Quit Menu allows you do either exit TLCFG
+  or execute a DOS Shell.  If you exit, you may
+  save your changes, or abandon them.
+*E
+
+*B 2,Log File
+  LOG FILE - Everything ToneLoc does is output
+  to the screen, in the Activity Window.  If
+  ^Logging to Disk^ is enabled, everything
+  that you see in the Activity Window is
+  also sent to this file.  You may override
+  this filename on the command line with
+  /L:[LogFileName].
+
+  See also ^Found File^.
+*E
+
+*B 3,Found File
+  FOUND FILE - Whenever ToneLoc finds a Tone,
+  Carrier, or you note a number, it is logged
+  to this file.  This keeps it separate from
+  the ^Log File^, making it easier to view your
+  Found numbers.
+
+  See also ^Logging To Disk^,
+           ^Carrier Log File^.
+*E
+
+*B 4,Black List
+  BLACK LIST - This is the name of the file
+  that contains a list of numbers that you
+  NEVER want dialed.  The file should be an
+  ASCII text file, with a phone number on each
+  line, EXACTLY as ToneLoc would dial it:
+  555-XXXX would not blacklist the
+  the number 555XXXX.
+
+  ToneLoc matches partial strings. This means
+  if you blacklist "911", you will also
+  blacklist 555-9110, 5591111, etc.
+*E
+
+*B 5,Alt Screen
+  ALT SCREEN - While scanning, you may want
+  to hide the screen from a parental unit or
+  someone else.  This is the name of the .BIN
+  file to display when <B> is pressed while
+  scanning.  This is a raw binary file that
+  you can create using TheDraw, and saving
+  your screen as <B>inary.  ToneLoc includes
+  a few sample .BIN files.
+*E
+
+*B 6,Carrier Log File
+  CARRIER LOG FILE - This file logs the output
+  from your found carriers so you can identify
+  the systems at a glance. this is the same file
+  as the ^Found File^ by default, but you can
+  change it if you prefer to have the results
+  in a separate file.
+
+  See also ^Logging To Disk^.
+*E
+
+*B 101,Modem Commands
+  MODEM COMMANDS - These are the commands
+  ToneLoc sends to the modem to initialize,
+  dial, hang up, and toggle the speaker.
+*E
+
+*B 126,Modem Responses
+  MODEM RESPONSES - These are the responses
+  the modem will give upon finding a carrier,
+  tone, fax, busy, voice, no dialtone, or
+  no carrier.
+*E
+
+*B 151,Volume Commands
+  VOLUME COMMANDS - These are the commands
+  ToneLoc sends to the modem to raise or
+  lower the volume.
+
+  You can also use these commands as macros
+  to control the modem while scanning.
+*E
+
+*B 102,Init String
+  INIT STRING - This is the string ToneLoc
+  sends to the modem to initialize it.
+  You can use this to set up the ATX
+  setting to use, the dialing speed, etc.
+
+  See ^Special Characters^, ^X Register^.
+*E
+
+*B 103,Init Response
+  INIT RESPONSE - This is the string the
+  modem returns once the modem has been
+  successfully initialized. ToneLoc will
+  try to initialize the modem three times.
+  If it does not get this response it
+  aborts.
+
+  See ^Special Characters^.
+*E
+
+*B 2045,Exit String
+  EXIT STRING - This is the string ToneLoc
+  sends to the modem before quitting the
+  program. Useful if you need to set your
+  modem to different settings than the
+  one ToneLoc uses before exiting.
+
+  See ^Special Characters^.
+*E
+
+*B 104,Dial Prefix
+  DIAL PREFIX - This is the string ToneLoc
+  sends to the modem before the number to
+  be dialed.
+
+  This will usually be "ATDT", but if you
+  are dialing out from a PBX or using
+  ^CLASS Commands^ you can set this up here.
+
+  See ^Special Characters^.
+*E
+
+*B 105,Dial Suffix
+  DIAL SUFFIX - This is the string ToneLoc
+  will add to the end of the dialing string
+  for a dialed number. Normally this is
+  just return (CR).
+
+  You might use this, for example, when
+  scanning an exchange which is also an
+  area code, and you wish to speed the dial.
+  ATDT 609-1234# will go through faster
+  than ATDT 609-1234 on a digital switch.
+
+  See ^Special Characters^.
+*E
+
+*B 106,Speaker ON
+  SPEAKER ON - This the the string ToneLoc
+  will send to the modem to toggle the
+  speaker on.
+
+  See also ^Special Characters^, ^Volume Controls^.
+*E
+
+*B 107,Speaker OFF
+  SPEAKER OFF - This the the string ToneLoc
+  will send to the modem to toggle the
+  speaker off.
+
+  See ^Special Characters^, ^Volume Controls^.
+*E
+
+*B 108,Normal Hangup
+  NORMAL HANGUP - This is the string ToneLoc
+  will send to the modem to abort or end a
+  normal dialing attempt.
+
+  This will be sent to the modem when the
+  modem does not respond with a response
+  that would end the dial within the
+  timeout period.
+
+  Most modems will terminate a dial attempt
+  with a CR, but some need special strings
+  like "~~~+++~~~ATH0|".          <More>
+*P
+  See ^Special Characters^.
+*E
+
+*B 109,Carrier Hangup
+  CARRIER HANGUP - This is the string ToneLoc
+  will send to the modem to hang it up once
+  it detects a carrier; i.e. when it has
+  connected to a modem.
+
+  Most modems will hang up in response to
+  lowering the DTR line "<~>", but you can
+  set it differently here if you need to.
+
+  See ^Special Characters^.
+*E
+
+*B 110,Tone Hangup
+  TONE HANGUP - This is the string ToneLoc
+  will send to the modem to hang it up
+  once it detects a tone.
+
+  (See the documentation for an extended
+  discussion of tone scanning.)
+
+  See ^Special Characters^.
+*E
+
+*B 111,Exit String
+  EXIT STRING - This is the string ToneLoc
+  will send to the modem upon exiting
+  toneloc.
+
+  See ^Special Characters^.
+*E
+
+*B 112,Shell String
+  SHELL STRING - This is the string ToneLoc
+  will send to the modem upon shelling to
+  dos.
+
+  See ^Special Characters^.
+*E
+
+*B 113,Shell Return String
+  SHELL RETURN STRING - This is the string
+  ToneLoc will send to the modem upon
+  returning from a dos shell.
+
+  See ^Special Characters^.
+*E
+
+*B 127,Found Carrier String
+  FOUND CARRIER STRING - This is the string the
+  modem will return upon finding a carrier. This
+  can be a partial match.  If your modem returns
+  "CONNECT 1200" or "CONNECT 2400" depending on
+  baud rate, you can just use "CONNECT".
+
+  See ^X Register^, ^Ignore CD Line^.
+*E
+
+*B 128,Found Tone String
+  FOUND TONE STRING - This is the string the
+  modem will return upon finding a tone.
+
+  If this string is not exclusive to tones,
+  and may also be returned when scanning for
+  carriers, you will need to change this to a
+  dummy value to prevent false positives.
+
+  See ^Scan For^.
+*E
+
+*B 129,Found Fax String
+  FOUND FAX STRING - This is the string the
+  modem will return upon finding a Fax machine.
+
+  [Doesn't work yet!]
+*E
+
+*B 130,Ringing String
+  RINGING STRING - This is the string the
+  modem will return when the called number
+  is ringing, i.e. "RING" or "RINGING".
+
+  See ^X Register^.
+*E
+
+*B 131,Busy String
+  BUSY STRING - This is the string the modem
+  will return when the called number is busy.
+  Usually "BUSY".
+
+  See ^X Register^.
+*E
+
+*B 132,Voice String
+  VOICE STRING - This is the string the modem
+  will return when the called number answers
+  with a voice response. Usually "VOICE".
+
+  See ^X Register^.
+*E
+
+*B 133,No Dialtone String
+  NO DIALTONE STRING - This is the string the
+  modem will return when it doesn't find a
+  dial tone on the line.
+
+  See ^No Dialtone Limit^, ^X Register^.
+*E
+
+*B 134,No Carrier String
+  NO CARRIER STRING - This is the string the
+  modem will return when it doesn't find a
+  carrier with the timeout limit. Usually
+  "NO CARRIER".
+
+  See ^Timeouts^, ^X Register^.
+*E
+
+*B 152,Volume Controls
+  VOLUME CONTROLS - These can be used for
+  changing the volume level of the modem's
+  speaker (ATLx where x is 0-5), or for
+  user defined macros to control the
+  behavior of the modem while scanning.
+
+  These commands are sent when you hit
+  0-9 while scanning.
+
+  See ^Speaker ON^, ^Speaker OFF^,
+  ^Special Characters^.
+*E
+
+
+
+
+*B 201,Serial Port
+  SERIAL PORT - Sets which serial port ToneLoc
+  will use. Use 1-4 for COM1-COM4. If the
+  modem is on one of the standard COM1-COM4
+  serial ports, you should leave ^Port Address^
+  and ^Port IRQ^ set to 0.
+
+  If you are using a non-standard COM port, set
+  the ^Port Address^ and ^Port IRQ^ manually;
+  Toneloc will ignore the Serial Port setting.
+
+  See also ^Standard Port Values^.
+*E
+
+*B 202,Port Address
+  PORT ADDRESS - Used to tell ToneLoc what your
+  ^Serial Port^'s address is. Only needs to be
+  set for non-standard COM ports, otherwise
+  set to 0.
+
+  See also ^Port IRQ^, ^Standard Port Values^.
+*E
+
+*B 203,Port IRQ
+  PORT IRQ - Used to tell ToneLoc what your
+  ^Serial Port^'s IRQ (interrupt) is. Only needs
+  to be set for non-standard COM ports,
+  otherwise set to 0.
+
+  See also ^Port Address^, ^Standard Port Values^.
+*E
+
+*B 204,Baud Rate
+  BAUD RATE - Used to tell ToneLoc what your
+  baud rate is. This should be set to the
+  maximum baud rate your modem can manage with
+  newer modems which can lock the ^Serial Port^,
+  like the USR Dual Standards. With older modems,
+  this should be set to the lowest baud rate
+  you are scanning for.
+
+  If you set this low you may need to adjust your
+  ^Delays^.
+*E
+
+*B 205,Use FOSSIL
+  USE FOSSIL - This should be set to Y or N
+  depending on whether you are using an external
+  ^FOSSIL^ driver.
+*E
+
+*B 206,Command Delay
+  COMMAND DELAY - This sets the number of
+  milliseconds Toneloc should wait between
+  sending commands.
+
+  See ^Delays^.
+*E
+
+*B 207,Character Delay
+  CHARACTER DELAY - This sets the number of
+  milliseconds Toneloc should wait between
+  sending characters to the modem.
+
+  See ^Delays^.
+*E
+
+*B 208,Response Wait
+  RESPONSE WAIT - This sets the number of
+  milliseconds Toneloc should wait for a
+  response from the modem after sending a
+  command.
+
+  See ^Delays^.
+
+*E
+
+*B 209,Ignore CD Line
+  IGNORE CD LINE - This tells Toneloc whether
+  to ignore or use the Carrier Detect line.
+  Toneloc normally will use either the carrier
+  detect line to determine if a carrier has
+  been found.
+
+  Some modems always set this high, others give
+  erroneous responses. Toneloc will only use the
+  ^Found Carrier String^ if this is set to "Y".
+
+*E
+
+*B 210,Ignore CTS Line
+  IGNORE CTS LINE - Most modems set CTS (Clear to
+  Send) high to indicate the modem is ready to
+  accept commands. Toneloc uses the CTS line
+  to sense whether a modem is connected or not;
+  if you set this option to "Y" Toneloc will
+  disable this checking.
+
+*E
+
+*B 211,Ignore Unknowns
+  IGNORE UNKNOWNS - Toneloc understands the
+  generic Hayes responses, and anything else
+  will provoke an "UNKNOWN" response.
+
+  Unknowns generally come from two things:
+  insufficient delays and exotic modems.
+
+  Insufficient delays will lead to responses
+  like "RINGI" and "BUS". If you are getting
+  responses like this, increase your ^Delays^.
+
+                                  <More>
+*P
+  If you have a modem whose responses or
+  commands do not conform to the Hayes
+  standards, you will need to configure your
+  ^Modem Commands^ and ^Modem Responses^.
+
+  If you still get "UNKNOWN" responses (from
+  things like "Dialing...") you'll need to set
+  this option to Y.
+
+  Normally this should be left at "N" since
+  a misdial, garbage, or error will often
+  show up as an "UNKNOWN".
+*E
+
+*B 301,Sound Effects
+  SOUND EFFECTS - Toneloc can play sound effects
+  for various keypresses and actions, like
+  speaker toggles and such. Set this to "Y"
+  if you want these sound effects. If set to
+  "N" you will hear no sound effects, including
+  the ^Found Chime^.
+*E
+
+*B 302,Found Chime
+  FOUND CHIME - Toneloc can make a noise on
+  finding a tone or carrier. Set this to "Y"
+  if you want to hear this.
+
+  See ^Sound Effects^.
+*E
+
+*B 303,Between Call Delay
+  BETWEEN CALL DELAY - This is the number of
+  milliseconds Toneloc will delay between calls.
+  If you aren't getting complete hangups,
+  increase this number.
+
+  See ^Delays^.
+*E
+
+*B 304,Wait Delay
+  WAIT DELAY - This is the number of milliseconds
+  Toneloc will wait for a tone or carrier from
+  the dialed number before hanging up and going
+  on to the next number.
+
+  See ^Delays^.
+*E
+
+*B 305,Between Wipe
+  BETWEEN WIPE - This is the type of wipe Toneloc
+  will use to clear the meter bar at the lower
+  right hand corner of the screen.
+
+  0 = Normal wipe
+  1 = Wipe edges to middle
+  2 = Wipe middle to edges
+  3 = Wipe right to left
+  4 = Wipe double right
+  5 = Wipe triple right
+*E
+
+*B 306,Save .DAT Files
+  SAVE .DAT FILES - Toneloc normally keeps a
+  record of the numbers dialed and their
+  responses in a .DAT file. If you don't want
+  this file kept, set this to "N".
+
+  See ^Autosave Interval^.
+*E
+
+*B 307,Maximum Rings
+  MAXIMUM RINGS - This is the maximum number
+  of rings Toneloc will take before aborting
+  the dial. Set this to 0 if you don't want
+  Toneloc to abort after a given number of
+  rings.
+
+  See ^X Register^.
+*E
+
+*B 308,Scan For
+  SCAN FOR - This lets you set what response
+  Toneloc will scan for.
+
+  0 = Tone
+  1 = Carrier
+  2 = All but tones
+  3 = All but carriers
+
+  See the manual for a complete discussion of
+  each response.
+*E
+
+*B 309,Autosave Interval
+  AUTOSAVE INTERVAL - Toneloc will automatically
+  save your .DAT file and Found file. Use
+  Autosave Interval to set the number of minutes
+  between saves, or disable it with 0.
+
+  See ^Save .DAT Files^.
+*E
+
+*B 310,Scanning Method
+  SCANNING METHOD - Sets whether Toneloc will
+  scan random or sequential.
+
+  -1 = Reverse sequential
+   0 = Random
+   1 = Forward sequential
+*E
+
+*B 311,Logging to Disk
+  LOGGING TO DISK - Everything ToneLoc does
+  is output to the screen in the Activity Window.
+  If Logging is ON, it is also sent to the file
+  specified by ^Log File^.  Since the Log file can
+  take up lots of space sometimes, you may want
+  to disable it.  However, all Found numbers
+  (Tones, Carriers, etc) are ALWAYS logged to
+  the Found File.
+
+  See also ^Found File^.
+*E
+
+*B 312,No Dialtone Limit
+  NO DIALTONE LIMIT - This is the number of times
+  Toneloc will accept a "NO DIALTONE" response
+  before it exits.
+*E
+
+*B 313,Found Log String
+  FOUND LOG STRING - This is the string Toneloc
+  will print to the ^Found File^ file when it finds
+  a response of the type it is looking for
+  (tone, carrier, all but tone, etc.)
+
+  This line can be anything, but certain
+  metacharacters have special meanings:
+
+  %d = Date
+  %t = Time
+  %n = Phone number
+                                  <More>
+*P
+  %b = brief result (T, C, NT, NC)
+  %l = Long result (Tone, Carrier, No Tone,
+       No Carrier)
+  %r = Response from modem (CONNECT 9600/ARQ)
+
+  The Found Log String of
+
+  %d %t %n %b --> %r
+
+  would result in something like this:
+
+  27-Jun-93 16:27:17 262-8895 C --> CONNECT 19200
+*E
+
+*B 314,Carrier Logging
+  CARRIER LOGGING - Toneloc will always record
+  the numbers it finds to the ^Found File^, but
+  Toneloc can also record a log of whatever the
+  target system sends back. If this is enabled
+  Toneloc will record this information in the
+  ^Found File^.
+
+See ^Nudge String^,^Post Nudge Delay^,
+    ^Parity Stripping^.
+*E
+
+*B 315,Nudge String
+  NUDGE STRING - This is the string Toneloc will
+  send upon connecting if ^Carrier Logging^ is
+  enabled.
+
+See ^Special Characters^.
+*E
+
+*B 316,Post Nudge Delay
+  POST NUDGE DELAY - When Toneloc connects with
+  ^Carrier Logging^ enabled, it first sends the
+  ^Nudge String^, then waits for the
+  ^Post Nudge Delay^ (entered in milliseconds).
+
+  Any results are recorded in the ^Found File^,
+  then Toneloc hangs up and goes on to the next
+  number.
+*E
+
+*B 317,Parity Stripping
+  PARITY STRIPPING - When ^Carrier Logging^,
+  Toneloc can strip the parity bit so that
+  E71 carriers and 8N1 carriers will both be
+  legible. Stripping is strongly suggested.
+
+  There are two modes:
+
+   0 - Don't strip parity (always 8N1)
+   1 - Strip parity       (always E71)
+*E
+
+*B 318,Linefeed Stripping
+  LINEFEED STRIPPING - When this option is
+  set, Toneloc will strip linefeed characters
+  (ASCII 13) from the found log file. Suggested.
+
+*E
+
+*B 501,Save Changes
+  SAVE CHANGES - This will save any changes
+  you have made in your configuration and
+  exit. The alternative is to ^Abort Changes^.
+
+*E
+
+*B 526,Dos Shell
+  DOS SHELL - This will shell you to the MS-DOS
+  prompt. When you are ready to return to
+  Toneloc Config, type EXIT.
+*E
+
+*B 551,Abort Changes
+  ABORT CHANGES - This will discard any changes
+  you have made in your configuration and exit.
+  If you wish to save your changes, choose
+  ^Save Changes^.
+*E
+
+
+
+*B 1001,Special Characters
+  SPECIAL CHARACTERS - These characters can
+  be incorporated into any string sent to the
+  modem.
+
+  ~ = Will delay .5 seconds before going on
+      to the rest of the dialstring.
+  | = Will send an [Enter] character to the
+      modem
+  < = Lowers the DTR signal line on the
+      modem. (This hangs up most modems).
+  > = Raises the DTR signal line on the
+      modem.                  <More>
+*P
+  ! = Lowers the DTR signal line for .25 seconds,
+      then raises it again.
+  ^^ = Precedes a letter to be sent as a control
+      character. For instance, ^^X would send
+      control-X.
+*E
+
+
+*B 1002,X Register
+   X REGISTER
+
+   The X register sets the types of responses
+   your modem will give during the progress of
+   a dial. Higher X registers (ATX4 and greater)
+   will sometimes enable messages like RINGING
+   and VOICE.
+
+   Check your modem's manual to see what it is
+   it is capable of, then consult the Toneloc
+   docs to see which X register to use.
+                                  <More>
+*P
+   See ^Maximum Rings^, ^Init String^,
+   ^Found Carrier String^, ^Ringing String^,
+   ^Busy String^, ^Voice String^, ^No Dialtone String^
+*E
+
+*B 1003,Timeouts
+  TIMEOUTS
+
+  General discussion of types of
+  timeouts and how they interact.
+
+  [Consult yr manual]
+
+*E
+
+*B 1004,Delays
+  DELAYS
+
+  Adjusting delays can lead to vastly
+  increased performance. The toneloc
+  defaults should work well to start,
+  but if you are having problems, or
+  wish to tweak, consult the manual.
+*E
+
+*B 1005,FOSSIL
+   A FOSSIL is a program that provides a
+   standardized interface between a
+   communications program and your modem.
+
+   If you have a non-standard com port, or
+   are having problems getting Toneloc
+   to recognize your modem, you may want
+   to investigate FOSSILs like BNU or
+   X00.
+
+   See ^Use FOSSIL^.
+*E
+
+*B 1006,CLASS Commands
+   CLASS Commands
+
+   For a discussion of class commands,
+   check the first few pages of your
+   phone book.
+
+   See ^Dial Prefix^.
+*E
+
+*B 1007,Standard Port Values
+
+  Standard Values: COM 1 : base 03F8, IRQ 4
+                   COM 2 : base 02F8, IRQ 3
+                   COM 3 : base 03E8, IRQ 4
+                   COM 4 : base 02E8, IRQ 3
+
+  See also ^Port Address^, ^Port IRQ^, ^Serial Port^.
+*E

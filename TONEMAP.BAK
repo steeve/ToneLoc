@@ -1,0 +1,735 @@
+/*
+** ToneMap.C - ToneLoc exchange mapper
+** (c) 1992 by Mucho Maas and Minor Threat
+*/
+
+// PUT VOICE MULTIPLE SHADES OF PURPLE!!!!! (???)
+
+/*
+ * Key:
+ *
+ *  (x = number of rings, more than 9 recorded as 9.)
+ *
+ *  00 = Undialed
+ *  1x = Busy
+ *  2x = Voice
+ *  3x = No Dialtone
+ *  40 = Noted
+ *   41 = Fax
+ *   42 = Girl
+ *   43 = VMB
+ *   44 = Yelling Asshole
+ *  5x = Aborted
+ *  6x = Ringout
+ *  7x = Timeout
+ *  8x = Tone
+ *  9x = Carrier
+ * 10x = Excluded
+ * 11x = Omitted
+ * 12x = Dialed
+ * 13x = Blacklisted
+ *
+ */
+
+#include <stdio.h>
+#include <dir.h>
+#include <dos.h>
+#include "ToneLoc.H"
+#include "fastgraf.H"
+
+struct _list {
+   char file[13];
+};
+struct   _list * files;
+struct   _scan scan;
+int      column,row,x,y;
+byte     col;                      /* what color should pixel be */
+byte     oldones[10000];           /* already used numbers */
+byte     testones[10000];          /* backup array to check against */
+char     oldDACS[768];             /* Old pallette values */
+char     curDACS[768];             /* current pallette values */
+word     maxcodes;                 /* maximum # of possible numbers */
+FILE     *datafile;
+int      count=0;
+byte     bcount=0;
+byte     savecolor;                /* color we don't want to erase */
+int      changecounter=0;
+int      dimmed=0;                 /* are we dimmed? */
+int      dimfactor=3;              /* amount to divide palette regs by */
+int      old_mode;
+int      mouse_status;
+
+void   putcursor(int);
+void   commandline(char *);
+void   dolist(char *);
+void   dowildcard(char *);
+void   loaddata(char *);
+void   savedata(char *);
+byte   whatcolor(byte);
+byte   whatresponse(byte);
+void   big_pixel(int,int);
+void   showcolors(void);
+void   stat_text(void);
+int    whatnum(int,int);
+void   setstatpix(int,char *,int,int,byte);
+void   setstatbar(int,int,byte);
+char * what_text(byte);
+void   dimpal(void);
+
+void main(int argc, char *argv[])
+{
+   unsigned char ch, aux;
+   int num = 0;
+   int z, show;
+   int quit=0;
+   char filename[13];
+   int maus_count,maus_x,maus_y;
+   int x_t,y_t;
+
+   if (argc == 1) {
+      fg_setcolor(15);
+      printf("ToneMap;  ToneLoc prefix map generator\n");
+      printf("          by Mucho Maas and Minor Threat\n\n");
+      printf("Usage: TONEMAP [Datfile]      - Displays single file\n"
+             "   or: TONEMAP @[Listfile]    - Displays each file in [Listfile]\n"
+             "                                (For slide shows, etc)");
+      exit(1);
+   }
+
+   show = (!stricmp(argv[1],"show"));
+
+   if (show)
+      showcolors();
+   else {
+      strcpy(filename,argv[1]);
+      commandline(filename);
+      old_mode = fg_getmode();
+      if (fg_testmode(19,1))
+        fg_setmode(19);
+      else {
+         printf("Tonemap requires MCGA graphics!");
+         exit(1);
+       }
+      fg_getdacs(0,255,oldDACS);      // We've just initialized graphics, grab default palette and store
+    }
+
+   z=0;
+   while (!quit) {
+      register int i;
+
+      if (!show) {
+         fg_mousevis(0);
+         fg_erase();
+         loaddata((char *) files[z].file);
+         gotoxy(27,1);
+         fg_setattr(15,0,0);  // White
+         printf("%s",files[z].file);
+
+         for (i=0; i < 10000; i++) {
+            x = (i / 100);
+            y = (i - (x * 100));
+            x *= 2;             /* 2 pixels wide */
+            y *= 2;             /* 2 pixels high */
+            col = whatcolor(oldones[i]);
+            fg_setcolor(col);
+            big_pixel(x,y);
+         }
+      }
+
+      stat_text();
+      mouse_status = fg_mouseini();
+      fg_mousemov(300,160);
+      fg_mousevis(1);
+      putcursor(-1);
+      putcursor(num);
+
+      ch=0;
+      aux=0;
+      while (ch != 27) {
+         fg_intkey(&ch,&aux);
+         if (ch==27) {
+          quit=1;
+          break;
+         }
+           fg_mousebut(1,&maus_count,&maus_x,&maus_y);
+           if (maus_count > 0)
+            {
+
+
+              if (whatnum(maus_x,maus_y) <= 9999)
+              {
+                num = whatnum(maus_x,maus_y);
+                putcursor(num);                 // It's in the map
+              }
+              else                              // it's off the map
+               {
+                 if ((maus_x > 209) && (maus_x < 218) && (maus_y > 15) && (maus_y < 151)) // in the vertical strip ? (dim other colors)
+                  {
+                     fg_mousevis(0);
+                     savecolor = fg_getpixel(maus_x,maus_y);
+                     memcpy(curDACS,oldDACS,sizeof(curDACS));  // bring old colors back
+                     if (!dimmed)
+                       dimmed = 1;      // flip status, but don't make a decision on this basis. Set only for dimpal().
+                      {
+                        dimmed = 1;
+                      for (count=0; count < 767; count++)
+                       {
+                        if ((count != (savecolor*3)) && (count != (savecolor*3)+1) && (count != (savecolor*3)+2)
+                           && (count != 45) && (count != 46) && (count != 47)
+                           && (count != 93) && (count != 94) && (count != 95))    // If not the clicked color or one of the whites
+                         if (curDACS[count] != 0)    // not already black
+                          curDACS[count] = curDACS[count]/dimfactor;         // make color darker
+                         if (curDACS[count] < 0)       // But make sure doesn't go negative
+                          curDACS[count] = 0;
+                       }
+                      }
+                     fg_setdacs(0,255,curDACS);     // Put pallette in effect
+                     fg_mousevis(1);
+                  } else
+                 if ((maus_x > 249) && (maus_x < 259) && (maus_y > 183) && (maus_y < 192))  // in the bottom box
+                   {
+                     gotoxy(27,22);
+                     fg_setcolor(15);      // white
+                     printf("Click result");
+                     gotoxy(27,23);
+                     printf("to change to");
+                     fg_mousevis(1);
+
+                     maus_count = 0;
+                     while (maus_count == 0)             // Wait for a mouse click
+                      fg_mousebut(1,&maus_count,&maus_x,&maus_y);
+
+                     if ((maus_x > 209) && (maus_x < 218) && (maus_y > 15) && (maus_y < 151)) // in the vertical strip ? (color to change to)
+                       {
+                        fg_mousevis(0);
+
+                        if ((maus_x > 209) && (maus_x < 218) && (maus_y > 47) && (maus_y < 55)) // in timeout box
+                         {
+                           if ((fg_getpixel(250,184) > 21) && (fg_getpixel(250,184) < 33)) // It's a shade of grey
+                            oldones[num]++;            // add one to ring value
+                           else
+                            oldones[num] = 70;        // timeout(0)
+                         }
+                       else
+                        if ((fg_getpixel(maus_x,maus_y) == fg_getpixel(250,184)) && ((oldones[num] < 40) || (oldones[num] > 49)))   // Same result, but not 4x range
+                          oldones[num]++;      // add one to ring value
+                        else
+                          oldones[num] = whatresponse(fg_getpixel(maus_x,maus_y));
+                        fg_setcolor(fg_getpixel(maus_x,maus_y));
+                        for (x=270; x < 278; x += 1)
+                          for (y=184; y < 191; y += 1)
+                            fg_point(x,y);
+                        fg_mousevis(1);
+                       }
+
+                       fg_mousevis(0);
+                       gotoxy(27,22);
+                       printf("            ");
+                       gotoxy(27,23);
+                       printf("            ");
+                       fg_mousevis(1);
+                       putcursor(num);            // needed? to fix it? Yes.
+                   }
+                  else   // SHOULD be an else if it's off map, but not in strip or below
+                   {
+                     memcpy(curDACS,oldDACS,sizeof(curDACS));  // bring old colors back
+                     fg_setdacs(0,255,curDACS);
+                   }
+               }
+            }
+
+
+
+            if (ch==0) {
+               switch (aux) {
+                  case 118: if (z<count-1) { z++; ch=27; } break; /* ^pgdn */
+                  case 132: if (z > 0)     { z--; ch=27; } break; /* ^pgup */
+                  case 80 : if (num < 9999) num++; break;      /* down arrow */
+                  case 72 : if (num > 0)    num--; break;      /* up arrow */
+                  case 77 : if (num < 9900) num += 100; break; /* right arrow */
+                  case 75 : if (num > 99)   num -= 100; break; /* left arrow */
+                  case 71 : if (num > 0)    num--;
+                            if (num > 99)   num -= 100; break; /* home */
+                  case 79 : if (num < 9999) num++;
+                            if (num > 99)   num -= 100; break; /* end */
+                  case 81 : if (num < 9999) num++;
+                            if (num < 9900) num += 100; break; /* PgDn */
+                  case 73 : if (num > 0)    num--;
+                            if (num < 9900) num += 100; break; /* PgUp */
+                  case 115 : for (x=num-1; x>=0; x--)          // ^<-
+                                if (whatcolor(oldones[x])==43) {
+                                   num=x;
+                                   break; // exit for loop
+                                }
+                             break;
+                  case 116 : for (x=num+1; x<9999; x++)          // ^->
+                                if (whatcolor(oldones[x])==43) {
+                                   num=x;
+                                   break; // exit for loop
+                                }
+                             break;
+                  case 117 : num = 9999; break;                /* ^end */
+                  case 119 : num = 0000; break;                /* ^home */
+               } // switch
+               if (aux != 0)  //  Have we moved? (To prevent mouse flicker)
+                 putcursor(num);
+            } // if ch==0
+           if ((ch == 43) || (ch == 45))
+           {
+           if (ch == 43)
+             dimfactor++;
+           if (ch == 45)
+             dimfactor--;
+           if (dimfactor < 1)
+            dimfactor = 50;
+           if (dimfactor > 50)
+            dimfactor = 1;
+           dimpal();
+           }
+         } // if kbhit
+    } // while
+
+   fg_setmode(old_mode);
+   fg_reset();
+
+   changecounter = 0;
+   for (x=0;x<10000;x++)
+    if (oldones[x] != testones[x])
+     changecounter++;
+
+   if (changecounter > 0) {
+    
+     if (changecounter == 1)
+       printf("1 change was made.\n\r");
+     else
+       printf("%d changes were made.\n\r",changecounter);
+     printf("Save changes? [y/N] ");
+     ch = 0;
+     aux = 0;
+     while (ch == 0)
+       fg_intkey(&ch,&aux);                  // loop until we get something
+
+     if ((ch == 'y') || (ch == 'Y')) {
+       savedata((char *) files[z].file);
+       printf("Y");
+       printf("\n\rChanges saved.\n\r");
+      }
+     else
+       printf("N\n\rChanges not saved.\n\r");
+    }
+   free(files);
+   printf("\n\rThanks for using ToneMap!\n");
+   exit(0);
+}
+
+void commandline(char * filename)
+{
+   int x;
+
+   if (filename[0]=='@')
+      dolist(&filename[1]);
+   else {
+      if (!strchr(filename,'.')) {
+         filename[8]=0;
+         strcat(filename,".DAT");
+      }
+      dowildcard(filename);
+   }
+}
+
+void dowildcard(char * arg)
+{
+   int done;
+   int i;
+   struct ffblk fblk;
+
+   i=0;
+   done = findfirst(arg,&fblk,0);
+   while (!done) {
+      done = findnext(&fblk);
+      i++;
+   }
+   printf("allocating %d bytes",i*sizeof(struct _list));
+   files = (struct _list *) malloc((size_t) i*sizeof(struct _list));
+
+   i=0;
+   done = findfirst(arg,&fblk,0);
+   while (!done) {
+      strcpy(files[i].file,fblk.ff_name);
+      done = findnext(&fblk);
+      i++;
+   }
+   count=i;
+}
+
+void dolist(char * arg)
+{
+   register int i;
+   int x;
+   int u;
+   FILE *f;
+   char s[120];
+   char * p;
+
+   f=fopen(arg,"rt");
+   if (!f) {
+      fg_setmode(old_mode);
+      fg_reset();
+//    SetVmode(0x03);
+      printf("Listfile '%s' not found!\n\a",arg);
+      exit(1);
+   }
+
+   for (i=0; (fgets(s,119,f)); i++)       /* count lines in file */
+      ;
+   fclose(f);
+
+   count=i;
+
+   printf("allocating %d bytes",i*sizeof(struct _list));
+
+   files = (struct _list *) malloc((unsigned) i*sizeof(struct _list));
+
+   if (files== NULL) {
+      printf("\aOut of memory allocating %d bytes\n",(sizeof(struct _list)*20));
+      exit(1);
+   }
+
+
+   f=fopen(arg,"rt");
+   if (!f) {
+      fg_setmode(old_mode);
+      fg_reset();
+//    SetVmode(0x03);
+      printf("File '%s' not found!\n\a",arg);
+      exit(1);
+   }
+   for (i=0, u=0; i<count; i++) {
+      fgets(s,119,f);
+//      s[12]=0;                 /* filename is never > 12 chars */
+                                 /*  But it may not *be* 12 chars! */
+      p=(char *) strchr(s,';');
+      if (p) *p = 0;           /* truncate at ; (semicolon) */
+
+      p=(char *) strchr(s,'\n');
+      if (p) *p = 0;           /*  truncate at LF */
+
+      p=(char *) strchr(s,'\r');
+      if (p) *p = 0;           /*  truncate at CR */
+
+      if (s[0])
+         strcpy(files[u++].file,s);
+   }
+   fclose(f);
+   count=u;
+}
+
+void putcursor(int number)
+{
+   int ccol, crow;
+   register int x, y;
+   static int oldnum = -1;
+   static byte oldcolor;
+
+   // check for new data file
+   if (number == -1) {
+      oldnum = -1;
+      return;
+   }
+
+   /* set white pixel back to original color */
+
+   if (oldnum != -1) {
+      x = ((oldnum / 100));
+      y = ((oldnum-(x*100)));
+      x *= 2;
+      y *= 2;
+      fg_setcolor(oldcolor);
+      fg_mousevis(0);
+      big_pixel(x,y);
+      fg_mousevis(1);
+   }
+
+   /* Now set new pixel to white */
+
+   x = ((number / 100));
+   y = ((number-(x*100)));
+   x *= 2;
+   y *= 2;
+
+   /* save number and attribute first */
+   oldnum = number;
+//   oldcolor = fg_getpixel(x,y);
+   oldcolor = whatcolor(oldones[whatnum(x,y)]);
+   fg_setcolor(15);              // white
+   fg_mousevis(0);
+   big_pixel(x,y);
+   fg_mousevis(1);
+
+   gotoxy(27,24);
+   fg_setcolor(15);          // white
+   printf("%04d        ",number);
+   gotoxy(27,25);
+   printf("%s",what_text(oldones[number]));
+
+   /* Set bottom right box to match */
+   fg_mousevis(0);
+   fg_setcolor(oldcolor);
+   for (x=250; x < 258; x += 1)
+      for (y=184; y < 191; y += 1)
+        fg_point(x,y);
+   fg_mousevis(1);
+}
+
+void loaddata(char * filename)
+{
+   FILE *f;
+
+   changecounter = 0;
+   fg_setdacs(0,255,oldDACS);        // Reset the palette to default
+
+   if ((f=fopen(filename,"rb")) != NULL) {
+      fread(&scan,sizeof(scan),1,f);
+      fread(&oldones,sizeof(oldones),1,f);
+      fclose(f);
+      memcpy(testones,oldones,sizeof(oldones));   // backup array
+   } else {
+      fg_setmode(old_mode);
+      fg_reset();
+//    SetVmode(0x03);
+      printf("Datafile '%s' not found!\n",filename);
+      exit(1);
+   }
+}
+
+void savedata(char * filename)
+{
+   FILE *f;
+
+   if ((f=fopen(filename,"wb")) != NULL) {
+     fwrite(&scan,sizeof(scan),1,f);
+     fwrite(&oldones,sizeof(oldones),1,f);
+     fclose(f);
+
+    }
+}
+void stat_text(void)
+{
+   int barcount;
+
+   setstatpix(3,"Tone",210,16,80);
+   setstatpix(4,"Carrier",210,24,90);
+   setstatpix(5,"Undialed",210,32,0);
+   setstatpix(6,"Dialed",210,40,120);
+   setstatpix(7,"Timeout",210,48,70);
+
+   for (barcount = 0; barcount < 7; barcount++)
+      setstatbar(211+barcount,48,71+barcount);
+
+   setstatpix(8, "Ringout",  210,56,60);
+   setstatpix(9, "Busy",     210,64,10);
+   setstatpix(10,"Voice",    210,72,20);
+   setstatpix(11,"Noted",    210,80,40);
+   setstatpix(12," Fax",     210,88,41);
+   setstatpix(13," VMB",     210,96,43);
+   setstatpix(14," Girl",    210,104,42);
+   setstatpix(15," Asshole", 210,112,44);
+   setstatpix(16,"Aborted",  210,120,50);
+   setstatpix(17,"Blacklist",210,128,130);
+   setstatpix(18,"Omitted",  210,136,110);
+   setstatpix(19,"Excluded", 210,144,100);
+}
+
+void setstatpix(int ytext, char * ftext, int x, int y, byte keynum)
+{
+   byte color;
+   register int xc, yc;
+
+   color = whatcolor(keynum);
+
+   fg_mousevis(0);
+   fg_setcolor(color);
+   for (xc=x; xc < x+8; xc++)
+      for (yc=y; yc < y+7; yc++)
+         fg_point(xc,yc);
+
+   gotoxy(29,ytext);
+   fg_setcolor(15);
+   printf("%s",ftext);
+   fg_mousevis(1);
+}
+
+void setstatbar(int x, int y, byte keynum)
+{
+   byte color;
+   register int yc;
+
+   color = whatcolor(keynum);
+
+   fg_mousevis(0);
+   fg_setcolor(color);
+   for (yc=y; yc < y+7; yc++)
+      fg_point(x,yc);
+   fg_mousevis(1);
+}
+
+void showcolors(void)
+{
+   register int count;
+   int x,y;
+
+   for (count=0; count < 256; count++) {
+      x = (count / 100);
+      y = count - (x * 100);
+      x *= 2;
+      y *= 2;
+      fg_setcolor(count);
+      fg_point(x,y);
+   }
+}
+
+void big_pixel(int x, int y)
+{
+// fg_mousevis(0);
+
+ fg_point(x,y);
+ fg_point(x+1,y);
+ fg_point(x,y+1);
+ fg_point(x+1,y+1);
+
+// fg_mousevis(1);
+}
+
+
+byte whatcolor(byte oldval)
+{
+   static int roundval;
+   static byte pixcolor;
+   static byte r=0;
+   static byte v[] = { 133,108,5,13,13,13,13,13,13 };
+
+   roundval = (oldval/10)*10;
+   r = oldval-roundval;
+
+   switch (roundval) {
+      case   0 : pixcolor = 0;    break;   /* Undialed    =  Black         */
+      case  10 : pixcolor = 4;    break;   /* Busy        =  Browish Red   */
+      case  20 : pixcolor = v[0]; break;   /* Voice       =  Vague Purple  */
+      case  30 : pixcolor = 40;   break;   /* No dialtone =                */
+      case  40 :
+         switch (oldval) {
+            case 40:  pixcolor = 76;   break;    /* Noted  = Bright Purple */
+            case 41:  pixcolor = 35;   break;    /* Fax    = Pastel Yellow */
+            case 42:  pixcolor = 79;   break;    /* Girl   =               */
+            case 43:  pixcolor = 64;   break;    /* VMB    =               */
+            case 44:  pixcolor = 83;   break;    /* Yelling Asshole =      */
+         } break;
+      case  50 : pixcolor = 111;  break;    /* Aborted     =  Dark Red     */
+      case  60 : pixcolor = 116;  break;    /* Ringout     =  Dark Green   */
+      case  70 : pixcolor = oldval - 48; break; /* Timeout =  Shades  Grey */
+      case  80 : pixcolor = 50;   break;    /* Tone        =  Bright Green */
+      case  90 : pixcolor = 43;   break;    /* Carrier     =  Light Red  41*/
+      case 100 : pixcolor = 159;  break;    /* Excluded    =  (Mud color)  */
+      case 110 : pixcolor = 239;  break;    /* Omitted     =  (Mud color)  */
+      case 120 : pixcolor = 124;  break;    /* Dialed      =  Gray Blue    */
+      case 130 : pixcolor = 55;   break;    /* Blacklisted =  Blue    1    */
+      default  : pixcolor = 0;    break;
+   }
+   return(pixcolor);
+}
+
+byte whatresponse(byte pixcolor)
+{
+   static byte response;
+
+   switch (pixcolor) {
+      case   0 : response = 0;    break;   /* Black        = Undialed       */
+      case   4 : response = 10;   break;   /* Brownish Red = Busy           */
+      case 133 : response = 20;   break;   /* Vague Purple = Voice          */
+      case  40 : response = 30;   break;   /*              = No dialtone    */
+      case  76 : response = 40;   break;   /* Bright purpl = Noted          */
+      case  35 : response = 41;   break;   /* Pastel Yell. = Fax            */
+      case  79 : response = 42;   break;   /*              = Girl           */
+      case  64 : response = 43;   break;   /*              = VMB            */
+      case  83 : response = 44;   break;   /*              = Yelling Ass.   */
+      case 111 : response = 50;   break;   /* Dark Red     = Aborted        */
+      case 116 : response = 60;   break;   /* Dark Green   = Ringout        */
+      case 50  : response = 80;   break;   /* bright Green = Tone           */
+      case 43  : response = 90;   break;   /* light red    = carrier        */
+      case 159 : response = 100;  break;   /* mud color    = excluded       */
+      case 239 : response = 110;  break;   /* mud color 2  = Omitted        */
+      case 124 : response = 120;  break;   /* Gray Blue    = Dialed         */
+      case 55  : response = 130;  break;   /* Blue 1       = Blacklisted    */
+      default  : printf("Sorry captain!"); response = 0;    break;
+//    case  70 : pixcolor = oldval - 48; break; /* Timeout =  Shades  Grey */
+   }
+   return(response);
+}
+
+
+int whatnum(int x,int y)
+{
+   int num;
+
+   num = 0;
+   num = ((x/2) * 100);
+   num += (y/2);
+
+   return(num);
+}
+
+char * what_text(byte oldval)
+{
+   static char retext[30];
+   register int roundval;
+   int rings;
+
+   roundval = 0;
+   if (oldval)
+      roundval = (oldval/10)*10;
+   rings = oldval - roundval;
+
+   switch (roundval) {
+      case   0 : strcpy(retext,"Undialed     ");        break;
+      case  10 : sprintf(retext,"Busy     (%d)",rings);   break;
+      case  20 : sprintf(retext,"Voice    (%d)",rings);   break;
+      case  30 : strcpy(retext,"No Dialtone  ");        break;
+      case  40 : switch (oldval) {
+                    case 40:  strcpy(retext,"Noted        ");  break;
+                    case 41:  strcpy(retext,"Fax          ");  break;
+                    case 42:  strcpy(retext,"Girl         ");  break;
+                    case 43:  strcpy(retext,"VMB          ");  break;
+                    case 44:  strcpy(retext,"Asshole      ");  break;
+                 } break;
+      case  50 : sprintf(retext,"Aborted  (%d)",rings);   break;
+      case  60 : sprintf(retext,"Ringout  (%d)",rings);   break;
+      case  70 : sprintf(retext,"Timeout  (%d)",rings);   break;
+      case  80 : sprintf(retext,"Tone     (%d)",rings);   break;
+      case  90 : sprintf(retext,"Carrier  (%d)",rings);   break;
+      case 100 : sprintf(retext,"Excluded (%d)",rings);   break;
+      case 110 : sprintf(retext,"Omitted  (%d)",rings);   break;
+      case 120 : sprintf(retext,"Dialed   (%d)",rings);   break;
+      case 130 : strcpy(retext,"Blacklisted  ");   break;
+      default  : strcpy(retext,"Undialed     ");   break;
+   }
+   return(retext);
+}
+
+void dimpal(void)
+{
+      fg_mousevis(0);
+      memcpy(curDACS,oldDACS,sizeof(oldDACS));   // backup array
+      for (count=0; count < 767; count++)
+       {
+        if ((count != (savecolor*3)) && (count != (savecolor*3)+1) && (count != (savecolor*3)+2)
+           && (count != 45) && (count != 46) && (count != 47)
+           && (count != 93) && (count != 94) && (count != 95))    // If not the clicked color or one of the whites
+           if (curDACS[count] != 0)    // not already black
+             curDACS[count] = curDACS[count]/dimfactor;         // make color darker
+           if (curDACS[count] < 0)       // But make sure doesn't go negative
+             curDACS[count] = 0;
+       }
+    if (dimmed)
+      fg_setdacs(0,255,curDACS);     // Put pallette in effect
+    fg_mousevis(1);
+}
