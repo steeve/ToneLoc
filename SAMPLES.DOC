@@ -1,0 +1,47 @@
+Print out this file. Then, to view these files in order, type
+
+ TONEMAP @SAMPLES
+
+Use Ctrl-PgUp and Ctrl-PgDn to move backwards and forwards through the
+files.
+
+--------------------------------------------------------------------------------
+Sample 1:       A generic residential exchange. Few carriers. Note the faint
+                pattern from 6900-7400.
+
+Sample 2:       A split exchange. 0-4000 is residential, business from
+                4000-9999.
+
+Sample 3:       A double exposure, this is a merge of a tone and carrier
+                scan. A dozen odd PBX's are sandwiched between residential
+                or mixed use. Note the tones and carriers at the bottom of
+                the PBX DID ranges.
+
+Sample 4:       Another mixed exchange, this time with wider bands. The
+                voice ranges are unworking numbers. The busy bands are
+                unused numbers in commercial DID groups.
+
+Sample 5:       This is much like sample 4, but with a more typical blurring
+                of boundaries between bands.
+
+Sample 6 & 7:   More mixed exchanges, with even less distinction between
+                bands. Here hunt and DID groups do not fill even bands of
+                100. This one comes from a large city where phone numbers
+                are at a premium.
+
+Sample 8a & 8b: This is the same exchange scanned twice, first for tones,
+                then for carriers. They look very different. Can someone
+                explain the "grid" pattern in the carrier scan 8000-9999?
+
+Sample 9:       Tone scanning doesn't always work well, even with the right
+                kind of modem. Any real tones are here obscured by false
+                responses.
+
+Sample 10:      Here's an exchange with many carriers. This is what carrier
+                logging is for.
+
+Sample 11:      An exchange with many carriers in one band.
+
+Sample 12:      Notice how this exchange fades off towards the bottom in
+                places. We've seen this a lot; perhaps low numbers are
+                allocated first?
